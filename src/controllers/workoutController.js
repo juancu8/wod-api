@@ -1,16 +1,37 @@
 const workoutService = require("../services/workoutService");
 
 const getAllWorkouts = (req, res) => {
-  const allWorkouts = workoutService.getAllWorkouts();
-  res.send({ status: "OK", data: allWorkouts });
+  try {
+    const allWorkouts = workoutService.getAllWorkouts();
+    res.send({ status: "OK", data: allWorkouts });
+  } catch (error) {
+    res.status(error?.status || 500).send({
+      status: "FAILED",
+      data: {
+        error: error?.message || error,
+      },
+    });
+  }
 };
 
 const getWorkoutById = (req, res) => {
   const workoutId = req.params.workoutId;
-  if (!workoutId) return;
+  if (!workoutId)
+    res
+      .status(400)
+      .send({ status: "FAILED", data: { error: "Missing workout Id" } });
 
-  const workout = workoutService.getWorkoutById(workoutId);
-  res.status(200).send({ status: "OK", data: workout });
+  try {
+    const workout = workoutService.getWorkoutById(workoutId);
+    res.status(200).send({ status: "OK", data: workout });
+  } catch (error) {
+    res.status(error?.status || 500).send({
+      status: "FAILED",
+      data: {
+        error: error?.message || error,
+      },
+    });
+  }
 };
 
 const createWorkout = (req, res) => {
@@ -23,7 +44,12 @@ const createWorkout = (req, res) => {
     !body.exercises ||
     !body.trainerTips
   ) {
-    return;
+    res.status(400).send({
+      status: "FAILED",
+      data: {
+        error: "Missing fields",
+      },
+    });
   }
 
   const newWorkout = {
@@ -34,8 +60,17 @@ const createWorkout = (req, res) => {
     trainerTips: body.trainerTips,
   };
 
-  const createdWorkout = workoutService.createWorkout(newWorkout);
-  res.status(201).send({ status: "OK", data: createdWorkout });
+  try {
+    const createdWorkout = workoutService.createWorkout(newWorkout);
+    res.status(201).send({ status: "OK", data: createdWorkout });
+  } catch (error) {
+    res.status(error?.status || 500).send({
+      status: "FAILED",
+      data: {
+        error: error?.message || error,
+      },
+    });
+  }
 };
 
 const updateWorkout = (req, res) => {
@@ -43,18 +78,51 @@ const updateWorkout = (req, res) => {
     body,
     params: { workoutId },
   } = req;
-  if (!workoutId) return;
 
-  const updatedWorkout = workoutService.updateWorkout(workoutId, body);
-  res.status(200).send({ status: "OK", data: updatedWorkout });
+  if (!workoutId) {
+    res.status(400).send({
+      status: "FAILED",
+      data: {
+        error: "Parameter workoutId can't be empty",
+      },
+    });
+  }
+
+  try {
+    const updatedWorkout = workoutService.updateWorkout(workoutId, body);
+    res.status(200).send({ status: "OK", data: updatedWorkout });
+  } catch (error) {
+    res.status(error?.status || 500).send({
+      status: "FAILED",
+      data: {
+        error: error?.message || error,
+      },
+    });
+  }
 };
 
 const deleteWorkout = (req, res) => {
   const workoutId = req.params.workoutId;
-  if (!workoutId) return;
+  if (!workoutId) {
+    res.status(400).send({
+      status: "FAILED",
+      data: {
+        error: "Parameter workoutId can't be empty",
+      },
+    });
+  }
 
-  workoutService.deleteWorkout(workoutId);
-  res.status(204).send({ status: "OK" });
+  try {
+    workoutService.deleteWorkout(workoutId);
+    res.status(204).send({ status: "OK" });
+  } catch (error) {
+    res.status(error?.status || 500).send({
+      status: "FAILED",
+      data: {
+        error: error?.message || error,
+      },
+    });
+  }
 };
 
 module.exports = {
